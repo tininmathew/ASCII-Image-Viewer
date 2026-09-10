@@ -1,0 +1,62 @@
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include<iostream>
+#include<string>
+#include<vector>
+#include"stb_image.h"
+#include"stb_image_resize2.h"
+#include"renderer.h"
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+int main(int argc, char* argv[])
+{
+	if(argc == 1)
+	{
+		std::cout << "Enter the path to an image" << std::endl;
+		return 1;
+	}
+	int width, height, channels;
+	unsigned char* initialImg = stbi_load(argv[1], &width, &height, &channels, 3);
+	if (!initialImg) 
+	{
+		std::cout << "Error: " << stbi_failure_reason() << std::endl;
+		return 1;
+	}
+	int w, h;
+
+	struct winsize wi;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wi);
+	if(wi.ws_col >= width*2)
+	{
+		w = width;
+		h = height;
+	}
+	else
+	{
+		w = wi.ws_col/2;
+		h = (wi.ws_col * height) / (width * 2);
+	}
+	for(int i = 2; i < argc; i++)
+	{
+		if(std::string(argv[i]) == "bobr")
+		{
+			std::cout << "bobr" << std::endl;
+		}
+	}
+	unsigned char* img = (unsigned char*)malloc(w*h*3);
+
+	stbir_resize_uint8_linear(initialImg, width, height, 0, 
+                             img, w, h, 0, 
+                             (stbir_pixel_layout)3);
+	std::vector<std::string> ascii = toAscii(w, h, img);
+	for(int i = 0; i < ascii.size(); i++)
+	{
+		std::cout << ascii[i] << std::endl;
+	}
+	std::cout << "\033[0m" << std::endl;
+	stbi_image_free(initialImg); 
+	free(img);
+	return 0;
+}
+
