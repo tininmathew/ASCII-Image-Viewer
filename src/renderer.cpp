@@ -3,7 +3,6 @@
 #include<vector>
 #include<string>
 
-
 std::vector<std::string> toAscii (int w, int h, unsigned char* img)
 {
 	std::vector<std::string> out;
@@ -22,14 +21,20 @@ std::vector<std::string> toAscii (int w, int h, unsigned char* img)
 			}
 			colBright /= 3;
 			colBright = (colBright / 255.0f) * (charset.size() - 1);
-			line += "\033[38;2;" + 
-				std::to_string(rgb[0]) + ";" + 
-				std::to_string(rgb[1]) + ";" +
-				std::to_string(rgb[2]) + "m" +
-				"\033[48;2;" +
+			if(!no_col)
+			{
+			 	line += "\033[38;2;" + 
 				std::to_string(rgb[0]) + ";" + 
 				std::to_string(rgb[1]) + ";" +
 				std::to_string(rgb[2]) + "m";
+				if(!no_bg)
+				{
+					line += "\033[48;2;" +
+					std::to_string(rgb[0]) + ";" + 
+					std::to_string(rgb[1]) + ";" +
+					std::to_string(rgb[2]) + "m";
+				}
+			}
 
 			line += charset[colBright];
 			line += charset[colBright];

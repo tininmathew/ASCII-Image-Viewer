@@ -6,8 +6,9 @@
 #include"stb_image.h"
 #include"stb_image_resize2.h"
 #include"renderer.h"
-#include <sys/ioctl.h>
-#include <unistd.h>
+#include<sys/ioctl.h>
+#include<unistd.h>
+#include<cstdlib>
 
 int main(int argc, char* argv[])
 {
@@ -39,9 +40,39 @@ int main(int argc, char* argv[])
 	}
 	for(int i = 2; i < argc; i++)
 	{
-		if(std::string(argv[i]) == "bobr")
+		if(std::string(argv[i]) == "--size")
 		{
-			std::cout << "bobr" << std::endl;
+			char* firstDigit = nullptr;
+			char* secondDigit = nullptr;
+			if(i+1 >= argc)
+			{
+				std::cout << "Error: Incorrect size!" << std::endl;
+				return 1;
+			}
+			std::strtod(argv[i+1], &firstDigit);
+			if(i+2 < argc)
+			{
+				std::strtod(argv[i+2], &secondDigit);
+			}
+			
+			w = std::atoi(argv[i+1]);
+			if(secondDigit != nullptr && *secondDigit == '\0')
+			{
+					h = std::atoi(argv[i+2]);
+			}
+			else
+			{
+				h = (w * height)/width;
+			}
+		}
+		if(std::string(argv[i]) == "--colorless")
+		{
+			no_bg = true;
+			no_col = true;
+		}
+		if(std::string(argv[i]) == "--symbols")
+		{
+			no_bg = true;
 		}
 	}
 	unsigned char* img = (unsigned char*)malloc(w*h*3);
