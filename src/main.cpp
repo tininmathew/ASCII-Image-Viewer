@@ -9,9 +9,12 @@
 #include<sys/ioctl.h>
 #include<unistd.h>
 #include<cstdlib>
+#include<filesystem>
+#include<fstream>
 
 int main(int argc, char* argv[])
 {
+	int writeTo = -1;
 	if(argc == 1)
 	{
 		std::cout << "Enter the path to an image" << std::endl;
@@ -74,20 +77,48 @@ int main(int argc, char* argv[])
 		{
 			no_bg = true;
 		}
+		if(std::string(argv[i]) == "--out")
+		{
+			no_bg = true;
+			no_col = true;
+			if(i+1 >= argc || !std::filesystem::exists(argv[i+1]))
+			{
+				std::cout << "Incorrect out: " << argv[i+1] << std::endl;
+			}
+			else
+			{
+				writeTo = i+1;
+			}
+		}
 	}
 	unsigned char* img = (unsigned char*)malloc(w*h*3);
 
 	stbir_resize_uint8_linear(initialImg, width, height, 0, 
                              img, w, h, 0, 
                              (stbir_pixel_layout)3);
+	stbi_image_free(initialImg); 
 	std::vector<std::string> ascii = toAscii(w, h, img);
+	free(img);
 	for(int i = 0; i < ascii.size(); i++)
 	{
 		std::cout << ascii[i] << std::endl;
 	}
 	std::cout << "\033[0m" << std::endl;
-	stbi_image_free(initialImg); 
-	free(img);
+	if(writeTo != -1)
+	{
+		std::fstream out(argv[writeTo]);
+		if(!out.is_open())
+		{
+			std::cout << "Error in opening file" << std::endl;
+			return 1;
+		}
+		for(int i = 0; i < ascii.size(); i++)
+		{
+			out << ascii[i] << std::endl;
+		}
+		out << "\033[0m" << std::endl;
+		out.close();
+	}
 	return 0;
 }
 
