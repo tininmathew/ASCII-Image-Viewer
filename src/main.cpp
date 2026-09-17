@@ -6,6 +6,7 @@
 #include"stb_image.h"
 #include"stb_image_resize2.h"
 #include"renderer.h"
+#include"error_logger.h"
 #include<sys/ioctl.h>
 #include<unistd.h>
 #include<cstdlib>
@@ -17,14 +18,19 @@ int main(int argc, char* argv[])
 	int writeTo = -1;
 	if(argc == 1)
 	{
-		std::cout << "Enter the path to an image" << std::endl;
+		error_logger::fileError();
 		return 1;
+	}
+	if(std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")
+	{
+		error_logger::helpOut();
+		return 0;
 	}
 	int width, height, channels;
 	unsigned char* initialImg = stbi_load(argv[1], &width, &height, &channels, 3);
 	if (!initialImg) 
 	{
-		std::cout << "Error: " << stbi_failure_reason() << std::endl;
+		error_logger::stbError(stbi_failure_reason());
 		return 1;
 	}
 	int w, h;
@@ -49,7 +55,7 @@ int main(int argc, char* argv[])
 			char* secondDigit = nullptr;
 			if(i+1 >= argc)
 			{
-				std::cout << "Error: Incorrect size!" << std::endl;
+				error_logger::incorrectSize();
 				return 1;
 			}
 			std::strtod(argv[i+1], &firstDigit);
@@ -83,7 +89,7 @@ int main(int argc, char* argv[])
 			no_col = true;
 			if(i+1 >= argc || !std::filesystem::exists(argv[i+1]))
 			{
-				std::cout << "Incorrect out: " << argv[i+1] << std::endl;
+				error_logger::incorrectOut();
 			}
 			else
 			{
@@ -109,7 +115,7 @@ int main(int argc, char* argv[])
 		std::fstream out(argv[writeTo]);
 		if(!out.is_open())
 		{
-			std::cout << "Error in opening file" << std::endl;
+			error_logger::outFileError();
 			return 1;
 		}
 		for(int i = 0; i < ascii.size(); i++)
